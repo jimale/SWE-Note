@@ -26,6 +26,12 @@ class NewNoteActivity : AppCompatActivity() {
             saveNote()
         }
 
+
+        val noteId = intent.getIntExtra("note_id", -1)
+        if (noteId != -1) {
+            displayNoteData()
+            saveButton.text = "Save changes"
+        }
     }
 
 
@@ -58,5 +64,69 @@ class NewNoteActivity : AppCompatActivity() {
 
         }.start()
 
+    }
+
+    private fun displayNoteData() {
+        val noteTitle: EditText = findViewById(R.id.note_title_et)
+        val noteBody: EditText = findViewById(R.id.note_body_et)
+        val updateButton: Button = findViewById(R.id.save_btn)
+
+        Thread {
+
+            val noteId = intent.getIntExtra("note_id", 0)
+
+            val database = Room.databaseBuilder(
+                applicationContext,
+                MyDatabase::class.java, "my_db"
+            )
+                .fallbackToDestructiveMigration()
+                .build()
+
+            //Fetch note data by using noteID
+            val noteData = database.noteDao().getNoteById(noteId)
+
+            runOnUiThread {
+                //Display note data
+                noteTitle.setText(noteData.title)
+                noteBody.setText(noteData.body)
+                updateButton.setOnClickListener { updateNote() }
+            }
+
+        }.start()
+
+    }
+
+    private fun updateNote() {
+        val noteTitle: EditText = findViewById(R.id.note_title_et)
+        val noteBody: EditText = findViewById(R.id.note_body_et)
+
+        Thread {
+
+            val noteId = intent.getIntExtra("note_id", 0)
+
+            val database = Room.databaseBuilder(
+                applicationContext,
+                MyDatabase::class.java, "my_db"
+            )
+                .fallbackToDestructiveMigration()
+                .build()
+
+            //Update note
+            val note = Note(
+                id = noteId,
+                title = noteTitle.text.toString(),
+                body = noteBody.text.toString()
+            )
+
+            database.noteDao().updateNote(note)
+
+            runOnUiThread {
+                Toast.makeText(this, "Successfully updated", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+            }
+
+
+        }.start()
     }
 }

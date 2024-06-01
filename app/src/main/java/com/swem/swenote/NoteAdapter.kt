@@ -1,5 +1,6 @@
 package com.swem.swenote
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,6 +37,12 @@ class NoteAdapter(private val noteList: List<Note>) :
         fun display(note: Note) {
             noteTitle.text = note.title
             //noteDate.text = note.date
+
+            itemView.setOnClickListener {
+                val intent = Intent(itemView.context, NewNoteActivity::class.java)
+                intent.putExtra("note_id", note.id)
+                itemView.context.startActivity(intent)
+            }
         }
     }
 
