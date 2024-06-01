@@ -2,6 +2,7 @@ package com.swem.swenote
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -22,8 +23,12 @@ class NewNoteActivity : AppCompatActivity() {
         }
 
         val saveButton: Button = findViewById(R.id.save_btn)
+        val deleteButton: Button = findViewById(R.id.delete_btn)
         saveButton.setOnClickListener {
             saveNote()
+        }
+        deleteButton.setOnClickListener {
+            deleteNote()
         }
 
 
@@ -31,6 +36,7 @@ class NewNoteActivity : AppCompatActivity() {
         if (noteId != -1) {
             displayNoteData()
             saveButton.text = "Save changes"
+            deleteButton.visibility = View.VISIBLE
         }
     }
 
@@ -128,5 +134,27 @@ class NewNoteActivity : AppCompatActivity() {
 
 
         }.start()
+    }
+
+    private fun deleteNote() {
+        Thread {
+
+            val noteId = intent.getIntExtra("note_id", 0)
+
+            val database = Room.databaseBuilder(
+                applicationContext,
+                MyDatabase::class.java, "my_db"
+            )
+                .fallbackToDestructiveMigration()
+                .build()
+
+            database.noteDao().deleteNote(noteId)
+
+            runOnUiThread {
+                Toast.makeText(this, "Successfully deleted", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+            }
+        }
     }
 }
