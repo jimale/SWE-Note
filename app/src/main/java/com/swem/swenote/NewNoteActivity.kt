@@ -13,6 +13,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.room.Room
 
 class NewNoteActivity : AppCompatActivity() {
+
+    private lateinit var database: MyDatabase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_note)
@@ -21,6 +24,9 @@ class NewNoteActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        //Initialize database
+        database = MyDatabase.invoke(this)
 
         val saveButton: Button = findViewById(R.id.save_btn)
         val deleteButton: Button = findViewById(R.id.delete_btn)
@@ -46,14 +52,6 @@ class NewNoteActivity : AppCompatActivity() {
         val noteBody: EditText = findViewById(R.id.note_body_et)
 
         Thread {
-
-            val database = Room.databaseBuilder(
-                applicationContext,
-                MyDatabase::class.java, "my_db"
-            )
-                .fallbackToDestructiveMigration()
-                .build()
-
             //Save the note to the database
             val note = Note(
                 title = noteTitle.text.toString(),
@@ -81,13 +79,6 @@ class NewNoteActivity : AppCompatActivity() {
 
             val noteId = intent.getIntExtra("note_id", 0)
 
-            val database = Room.databaseBuilder(
-                applicationContext,
-                MyDatabase::class.java, "my_db"
-            )
-                .fallbackToDestructiveMigration()
-                .build()
-
             //Fetch note data by using noteID
             val noteData = database.noteDao().getNoteById(noteId)
 
@@ -109,13 +100,6 @@ class NewNoteActivity : AppCompatActivity() {
         Thread {
 
             val noteId = intent.getIntExtra("note_id", 0)
-
-            val database = Room.databaseBuilder(
-                applicationContext,
-                MyDatabase::class.java, "my_db"
-            )
-                .fallbackToDestructiveMigration()
-                .build()
 
             //Update note
             val note = Note(
@@ -140,13 +124,6 @@ class NewNoteActivity : AppCompatActivity() {
         Thread {
 
             val noteId = intent.getIntExtra("note_id", 0)
-
-            val database = Room.databaseBuilder(
-                applicationContext,
-                MyDatabase::class.java, "my_db"
-            )
-                .fallbackToDestructiveMigration()
-                .build()
 
             database.noteDao().deleteNote(noteId)
 
