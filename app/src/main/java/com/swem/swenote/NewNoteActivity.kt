@@ -155,6 +155,6 @@ class NewNoteActivity : AppCompatActivity() {
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }
-        }
+        }.start()
     }
 }
