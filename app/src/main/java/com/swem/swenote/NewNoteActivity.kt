@@ -5,12 +5,16 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.room.Room
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class NewNoteActivity : AppCompatActivity() {
 
@@ -31,7 +35,7 @@ class NewNoteActivity : AppCompatActivity() {
         val saveButton: Button = findViewById(R.id.save_btn)
         val deleteButton: Button = findViewById(R.id.delete_btn)
         saveButton.setOnClickListener {
-            saveNote()
+            saveNoteToServer()
         }
         deleteButton.setOnClickListener {
             deleteNote()
@@ -133,5 +137,42 @@ class NewNoteActivity : AppCompatActivity() {
                 finish()
             }
         }.start()
+    }
+
+
+    private fun saveNoteToServer(){
+        val noteTitle: EditText = findViewById(R.id.note_title_et)
+        val noteBody: EditText = findViewById(R.id.note_body_et)
+        val progressBar: ProgressBar = findViewById(R.id.progressBar)
+
+
+        //Network request
+        val apiService = RetrofitClient.instance.create(ApiService::class.java)
+
+        //show loading
+        progressBar.visibility = View.VISIBLE
+
+        apiService.newNote(noteTitle.text.toString(),noteBody.text.toString()).enqueue(object : Callback<NoteResponse> {
+            override fun onResponse(call: Call<NoteResponse>, response: Response<NoteResponse>) {
+
+                //hide loading
+                progressBar.visibility = View.GONE
+
+                if (response.isSuccessful) {
+                    val noteResponse = response.body()
+                    Toast.makeText(this@NewNoteActivity, noteResponse?.message, Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@NewNoteActivity, "Server error: ${response.message()}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<NoteResponse>, t: Throwable) {
+                //hide loading
+                progressBar.visibility = View.GONE
+
+                Toast.makeText(this@NewNoteActivity, "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+
     }
 }
